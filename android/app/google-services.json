@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "982645835704",
+    "project_id": "formmahasiswa-5f427",
+    "storage_bucket": "formmahasiswa-5f427.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982645835704:android:dec1682bee65f19135b14d",
+        "android_client_info": {
+          "package_name": "com.example.mynoteku"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpoJBDcaL-Jb9aHLMTDWPo0mjhDv66Nyk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982645835704:android:d1161fc71db5443635b14d",
+        "android_client_info": {
+          "package_name": "com.mycompany.formmahasiswa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpoJBDcaL-Jb9aHLMTDWPo0mjhDv66Nyk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
