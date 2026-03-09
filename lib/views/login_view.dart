@@ -1,6 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+// PASTIKAN DUA IMPORT INI ADA
+import '../constants/routes.dart';
+import '../utilities/show_error_dialog.dart';
+
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
 
@@ -9,11 +13,9 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  // 1. Deklarasi TextEditingController untuk menangkap inputan teks
   late final TextEditingController _email;
   late final TextEditingController _password;
 
-  // 2. Inisialisasi controller
   @override
   void initState() {
     _email = TextEditingController();
@@ -21,7 +23,6 @@ class _LoginViewState extends State<LoginView> {
     super.initState();
   }
 
-  // 3. Hapus controller dari memori saat halaman ditutup
   @override
   void dispose() {
     _email.dispose();
@@ -37,7 +38,6 @@ class _LoginViewState extends State<LoginView> {
       ),
       body: Column(
         children: [
-          // TextField untuk Email
           TextField(
             controller: _email,
             keyboardType: TextInputType.emailAddress,
@@ -47,43 +47,67 @@ class _LoginViewState extends State<LoginView> {
               hintText: 'Enter your email here',
             ),
           ),
-          // TextField untuk Password
           TextField(
             controller: _password,
-            obscureText: true, // Menyembunyikan teks password
+            obscureText: true, 
             enableSuggestions: false,
             autocorrect: false,
             decoration: const InputDecoration(
               hintText: 'Enter your password here',
             ),
           ),
-          // Tombol Login
           TextButton(
             onPressed: () async {
-              // _email dan _password sekarang sudah dikenali
               final email = _email.text;
               final password = _password.text;
               
               try {
+                // 1. Proses login ke Firebase
                 await FirebaseAuth.instance.signInWithEmailAndPassword(
                   email: email,
                   password: password,
                 );
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/notes/', (route) => false);
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'user-not-found') {
-                  print('User not found');
-                } else if (e.code == 'wrong-password') {
-                  print('Wrong password');
+                
+                // 2. Tarik data user yang baru saja login
+                final user = FirebaseAuth.instance.currentUser;
+                
+                // 3. Confirming Identity (Cek apakah email sudah diverifikasi)
+                if (user?.emailVerified ?? false) {
+                  // Jika SUDAH diverifikasi -> Masuk ke layar Notes
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    notesRoute, 
+                    (route) => false,
+                  );
+                } else {
+                  // Jika BELUM diverifikasi -> Lempar ke layar Verifikasi Email
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    verifyEmailRoute, 
+                    (route) => false,
+                  );
                 }
+
+              } on FirebaseAuthException catch (e) {
+                // 4. Ubah print() menjadi showErrorDialog()
+                if (e.code == 'user-not-found') {
+                  await showErrorDialog(context, 'User not found');
+                } else if (e.code == 'wrong-password') {
+                  await showErrorDialog(context, 'Wrong credentials');
+                } else {
+                  await showErrorDialog(context, 'Error: ${e.code}');
+                }
+              } catch (e) {
+                await showErrorDialog(context, e.toString());
               }
             },
             child: const Text('Login'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pushNamedAndRemoveUntil('/register/', (route) => false);
+              // 5. Ubah string manual menjadi konstanta rute
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                registerRoute, 
+                (route) => false,
+              );
             },
             child: const Text('Not registered yet? Register here!'),
           )
