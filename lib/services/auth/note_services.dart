@@ -3,9 +3,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join;
 
-// ==============================
-// 1. QUERY UNTUK MEMBUAT TABEL
-// ==============================
 const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
   "id"	INTEGER NOT NULL,
   "email"	TEXT NOT NULL UNIQUE,
@@ -21,9 +18,6 @@ const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
   PRIMARY KEY("id" AUTOINCREMENT)
 );''';
 
-// ==============================
-// 2. MODEL DATA DART
-// ==============================
 class DatabaseUser {
   final int id;
   final String email;
@@ -55,13 +49,14 @@ class DatabaseNote {
         isSyncedWithCloud = (map['is_synced_with_cloud'] as int) == 1 ? true : false;
 }
 
-// ==============================
-// 3. SERVICE UTAMA (CRUD & STREAM)
-// ==============================
 class NotesService {
   Database? _db;
 
   List<DatabaseNote> _notes = [];
+  
+  
+  DatabaseUser? _user;
+
   late final StreamController<List<DatabaseNote>> _notesStreamController;
 
   static final NotesService _shared = NotesService._sharedInstance();
@@ -76,7 +71,16 @@ class NotesService {
   
   factory NotesService() => _shared;
 
-  Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
+ 
+  Stream<List<DatabaseNote>> get allNotes => 
+      _notesStreamController.stream.map((notes) {
+        final currentUser = _user;
+        if (currentUser != null) {
+          return notes.where((note) => note.userId == currentUser.id).toList();
+        } else {
+          return [];
+        }
+      });
 
   Future<void> _cacheNotes() async {
     final allNotes = await getAllNotes();
@@ -109,7 +113,10 @@ class NotesService {
       whereArgs: [email.toLowerCase()],
     );
     if (results.isEmpty) throw Exception('User tidak ditemukan');
-    return DatabaseUser.fromRow(results.first);
+    
+    final user = DatabaseUser.fromRow(results.first);
+    _user = user;
+    return user;
   }
 
   Future<DatabaseUser> createUser({required String email}) async {
@@ -124,9 +131,11 @@ class NotesService {
   Future<DatabaseUser> getOrCreateUser({required String email}) async {
     try {
       final user = await getUser(email: email);
+      _user = user;
       return user;
     } catch (e) {
       final createdUser = await createUser(email: email);
+      _user = createdUser; 
       return createdUser;
     }
   }
