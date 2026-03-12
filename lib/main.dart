@@ -1,11 +1,16 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'firebase_options.dart'; // File ini tergenerate otomatis dari langkah ke-8
-import 'views/login_view.dart';
-import 'views/register_view.dart';
 
-void main() {
+// Menggunakan Absolute Import agar tidak pernah error path
+import 'package:mynoteku/firebase_options.dart';
+import 'package:mynoteku/constants/routes.dart'; // Ini yang menyembuhkan error route
+import 'package:mynoteku/views/login_view.dart';
+import 'package:mynoteku/views/register_view.dart';
+import 'package:mynoteku/views/notes_view.dart';
+import 'package:mynoteku/views/verify_email_view.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
@@ -19,8 +24,10 @@ class MyApp extends StatelessWidget {
       title: 'My Notes',
       home: const HomePage(),
       routes: {
-        '/login/': (context) => LoginView(),
-        '/register/': (context) => RegisterView(),
+        loginRoute: (context) => const LoginView(),
+        registerRoute: (context) => const RegisterView(),
+        notesRoute: (context) => const NotesView(),
+        verifyEmailRoute: (context) => const VerifyEmailView(),
       },
     );
   }
@@ -39,13 +46,17 @@ class HomePage extends StatelessWidget {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
             final user = FirebaseAuth.instance.currentUser;
+            
             if (user != null) {
-              // Jika user ada, arahkan ke UI Utama (Misal: NotesView)
-              return const Text('Main UI - User Logged In');
+              if (user.emailVerified) {
+                return const NotesView(); 
+              } else {
+                return const VerifyEmailView(); 
+              }
             } else {
-              // Jika belum ada user / belum login
-              return LoginView();
+              return const LoginView();
             }
+            
           default:
             return const Scaffold(
               body: Center(child: CircularProgressIndicator()),

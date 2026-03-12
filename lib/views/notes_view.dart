@@ -1,70 +1,67 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../services/auth/notes_service.dart';
 
-enum MenuAction { logout }
+typedef NoteCallback = void Function(DatabaseNote note);
 
-class NotesView extends StatefulWidget {
-  const NotesView({Key? key}) : super(key: key);
+class NotesListView extends StatelessWidget {
+  final List<DatabaseNote> notes;
+  final NoteCallback onDeleteNote;
+  final NoteCallback onTap;
 
-  @override
-  State<NotesView> createState() => _NotesViewState();
-}
+  const NotesListView({
+    Key? key,
+    required this.notes,
+    required this.onDeleteNote,
+    required this.onTap,
+  }) : super(key: key);
 
-class _NotesViewState extends State<NotesView> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your Notes'),
-        actions: [
-          PopupMenuButton<MenuAction>(
-            onSelected: (value) async {
-              switch (value) {
-                case MenuAction.logout:
-                  final shouldLogout = await showLogoutDialog(context);
-                  if (shouldLogout) {
-                    await FirebaseAuth.instance.signOut();
-                    // Akan diarahkan kembali ke Register/Login
-                  }
+    return ListView.builder(
+      itemCount: notes.length,
+      itemBuilder: (context, index) {
+        final note = notes[index];
+        return ListTile(
+          onTap: () => onTap(note),
+          title: Text(
+            note.text,
+            maxLines: 1,
+            softWrap: true,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: IconButton(
+            onPressed: () async {
+              final shouldDelete = await showDeleteDialog(context);
+              if (shouldDelete) {
+                onDeleteNote(note);
               }
             },
-            itemBuilder: (context) {
-              return const [
-                PopupMenuItem<MenuAction>(
-                  value: MenuAction.logout,
-                  child: Text('Logout'),
-                )
-              ];
-            },
-          )
-        ],
-      ),
-    );
-  }
-
-  Future<bool> showLogoutDialog(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Sign out'),
-          content: const Text('Are you sure you want to sign out?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: const Text('Yes'),
-            )
-          ],
+            icon: const Icon(Icons.delete),
+          ),
         );
       },
-    ).then((value) => value ?? false);
+    );
   }
+}
+
+Future<bool> showDeleteDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Delete'),
+        content: const Text('Are you sure you want to delete this note?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Yes'),
+          ),
+        ],
+      );
+    },
+  ).then((value) => value ?? false);
 }
