@@ -1,4 +1,4 @@
-
+// lib/services/auth/firebase_auth_provider.dart
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth, FirebaseAuthException;
 import '../../firebase_options.dart';
@@ -37,5 +37,22 @@ class FirebaseAuthProvider implements AuthProvider {
       throw GenericAuthException();
     }
   }
-
+  
+  @override
+  Future<AuthUser> createUser({required String email, required String password}) {
+    // TODO: implement createUser
+    throw UnimplementedError();
+  }
+  
+  @override
+  Future<void> logOut() {
+    // TODO: implement logOut
+    throw UnimplementedError();
+  }
+  
+  @override
+  Future<void> sendEmailVerification() {
+    // TODO: implement sendEmailVerification
+    throw UnimplementedError();
+  }
 }

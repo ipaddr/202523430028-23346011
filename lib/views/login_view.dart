@@ -1,7 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-// PASTIKAN DUA IMPORT INI ADA
 import '../constants/routes.dart';
 import '../utilities/show_error_dialog.dart';
 
@@ -62,24 +60,24 @@ class _LoginViewState extends State<LoginView> {
               final password = _password.text;
               
               try {
-                // 1. Proses login ke Firebase
+             
                 await FirebaseAuth.instance.signInWithEmailAndPassword(
                   email: email,
                   password: password,
                 );
                 
-                // 2. Tarik data user yang baru saja login
+              
                 final user = FirebaseAuth.instance.currentUser;
                 
-                // 3. Confirming Identity (Cek apakah email sudah diverifikasi)
+                
                 if (user?.emailVerified ?? false) {
-                  // Jika SUDAH diverifikasi -> Masuk ke layar Notes
+                  
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     notesRoute, 
                     (route) => false,
                   );
                 } else {
-                  // Jika BELUM diverifikasi -> Lempar ke layar Verifikasi Email
+                
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     verifyEmailRoute, 
                     (route) => false,
@@ -87,7 +85,7 @@ class _LoginViewState extends State<LoginView> {
                 }
 
               } on FirebaseAuthException catch (e) {
-                // 4. Ubah print() menjadi showErrorDialog()
+               
                 if (e.code == 'user-not-found') {
                   await showErrorDialog(context, 'User not found');
                 } else if (e.code == 'wrong-password') {
@@ -103,7 +101,7 @@ class _LoginViewState extends State<LoginView> {
           ),
           TextButton(
             onPressed: () {
-              // 5. Ubah string manual menjadi konstanta rute
+              
               Navigator.of(context).pushNamedAndRemoveUntil(
                 registerRoute, 
                 (route) => false,
